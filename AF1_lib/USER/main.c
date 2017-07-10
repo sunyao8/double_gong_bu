@@ -181,7 +181,7 @@ int main(void)
 /************************************/
 ///	uart_init(9600);LCD_Init();	                                                              //调试显示
 RS485_Init(9600);	//初始化RS485
-	TIM4_Int_Init(9999*2,7199);//10Khz的计数频率，计数10K次为1000ms 
+	TIM4_Int_Init(9999*4,7199);//10Khz的计数频率，计数10K次为1000ms 
 	 initmybox();
 	 init_mystatus(SIZE_1,SIZE_2,WORK_STATUS_1,WORK_STATUS_2,WORK_TIME_1,WORK_TIME_2);
 EXTI_Configuration();//初始化函数

@@ -1,19 +1,43 @@
----- warn_volt_onlimt Matches (17 in 3 files) ----
-485ANN.c (hardware\485ann):extern vu8 warn_volt_onlimt;
-485ANN.c (hardware\485ann):warn_volt_onlimt=	AT24CXX_ReadOneByte(0x1000);					
-485ANN.c (hardware\485ann):if((dianya_zhi>(warn_volt_onlimt+400)||dianya_zhi<330))
-485ANN.c (hardware\485ann):if((dianya_zhi>(warn_volt_onlimt+400)||dianya_zhi<330)&&warning_flag==0)
-485ANN.c (hardware\485ann):if(warning_flag==1&&dianya_zhi<=(warn_volt_onlimt+400-7)&&dianya_zhi>=333)
-485ANN.c (hardware\485ann):if(dianya_zhi<=(warn_volt_onlimt+400)&&dianya_zhi>=330&&warning_flag==0)
-Key.c (hardware\key):vu8	warn_volt_onlimt=25;//过压值 +400
-Key.c (hardware\key):			   		Graf_set_warn_volt(warn_volt_onlimt+400);
-Key.c (hardware\key):							warn_volt_onlimt=warn_volt_onlimt+5;
-Key.c (hardware\key):					  		if(warn_volt_onlimt>50)warn_volt_onlimt=0;
-Key.c (hardware\key):			   		   Graf_set_warn_volt(warn_volt_onlimt+400);
-Key.c (hardware\key):							AT24CXX_WriteOneByte(0x1000,warn_volt_onlimt);
-Main.c (user):extern vu8 warn_volt_onlimt;
-Main.c (user):if((dianya_zhi>(warn_volt_onlimt+400)||dianya_zhi<330)&&warning_flag==0)
-Main.c (user):if(warning_flag==1&&dianya_zhi<=(warn_volt_onlimt+400-3)&&dianya_zhi>=333)
----- warn_volt_onlimt Search Errors Encountered (1) ----
+---- set_now_mystatus Matches (39 in 4 files) ----
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
+485ANN.c (hardware\485ann):void set_now_mystatus(u8 myid,u8 size_1,u8 size_2,u8 work_status_1,u8 work_status_2,u8 work_time_1,u8 work_time_2)
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],1,mystatus.work_status[1],mystatus.work_time[0],mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],1,mystatus.work_time[0],mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],2,mystatus.work_status[1],0,mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],2,mystatus.work_time[0],0);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],3,mystatus.work_status[1],0,mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],3,mystatus.work_time[0],0);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],1,mystatus.work_status[1],mystatus.work_time[0],mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],1,mystatus.work_time[0],mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
+485ANN.c (hardware\485ann): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
+485ANN.h (hardware\485ann):void set_now_mystatus(u8 ,u8 ,u8 ,u8,u8,u8,u8);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],1,mystatus.work_status[1],mystatus.work_time[0],mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],3,mystatus.work_status[1],0,mystatus.work_time[1]);//状态3为放电状态
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],1,mystatus.work_time[0],mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],3,mystatus.work_time[0],0);//状态3为放电状态
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],1,mystatus.work_status[1],mystatus.work_time[0],mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],1,mystatus.work_time[0],mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],1,mystatus.work_status[1],mystatus.work_time[0],mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],1,mystatus.work_time[0],mystatus.work_time[1]);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
+Main.c (user): set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],2,2,0,mystatus.work_time[1]);
+Main.c (user):set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],3,3,0,mystatus.work_time[1]);
+UCOSII-2.htm (obj):<LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_now_mystatus
+UCOSII-2.htm (obj):<LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_now_mystatus
+UCOSII-2.htm (obj):<P><STRONG><a name="[70]"></a>set_now_mystatus</STRONG> (Thumb, 24 bytes, Stack size 20 bytes, 485ann.o(.text))
+UCOSII-2.htm (obj):<BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = set_now_mystatus
+UCOSII-2.htm (obj):<LI>Call Chain = TIM3_IRQHandler &rArr; set_now_mystatus
+UCOSII-2.htm (obj):<BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_now_mystatus
+UCOSII-2.htm (obj):<LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_now_mystatus
+---- set_now_mystatus Search Errors Encountered (1) ----
 The following 1 files could not be processed:
-C:\Users\Administrator\Documents\GitHub\gong_bu\AF1_lib\USER\JLinkLog.txt : File could not be opened.
+C:\Users\Administrator\Documents\GitHub\double_gong_bu\AF1_lib\USER\JLinkLog.txt : File could not be opened.

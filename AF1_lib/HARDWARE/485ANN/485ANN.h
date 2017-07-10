@@ -27,7 +27,7 @@
   u8 end;   
 }box;
 #define LEN_control 15
-#define LEN_status 10
+#define LEN_status 13
 #define CPT_LL                                                    '^'
 #define CONTROL                                                '/'
 

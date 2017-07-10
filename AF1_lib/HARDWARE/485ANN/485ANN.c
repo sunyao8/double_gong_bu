@@ -49,7 +49,7 @@ idle_list sort_idle_list_2[33];
 turn_node turn_idle_list[65];
 busy_list sort_busy_list_1[33];
 busy_list sort_busy_list_2[33];
-
+u8 work_time1,work_time2;
 
 status_list_node system_status_list[33];
 
@@ -88,7 +88,7 @@ double angle[4];
 
 /************************************************************/
 u16 wugong_95,wugong_computer;
-
+extern vu32 dianliuzhi_A,dianliuzhi_C;
 extern vu8 id_num;
 extern vu8 warn_volt_onlimt;
 extern vu8 grafnum,tempshuzhi,gonglvshishu,tempshuzhi2;
@@ -151,7 +151,11 @@ extern u8 BT_num;
 
 	if(ligt_time==0)LIGHT(mystatus.work_status[0],mystatus.work_status[1],0);
 if(init_time>0)init_time--;
-/*
+if(mystatus.work_status[0]==1&&work_time1<254)mystatus.work_time[0]++;
+if(mystatus.work_status[1]==1&&work_time1<254)mystatus.work_time[1]++;
+if(mystatus.work_status[0]==0)mystatus.work_time[0]=0;
+if(mystatus.work_status[1]==0)mystatus.work_time[1]=0;
+	/*
 {
 	if(mybox.master==1)	
 				{
@@ -565,17 +569,20 @@ mystatus.work_time[1]=work_time_2;
  void status_trans_rs485(status_box *mystatus)//从机程序
 {  	 OS_CPU_SR cpu_sr=0;
     OS_ENTER_CRITICAL();
-    statusbuf[0]='&';
+     statusbuf[0]='&';
 	statusbuf[1]='#';
 	statusbuf[2]=mystatus->myid;
 	statusbuf[3]=mystatus->size[0];
 	statusbuf[4]=mystatus->size[1];
 	statusbuf[5]=mystatus->work_status[0];
 	statusbuf[6]=mystatus->work_status[1];
-	statusbuf[7]=mystatus->work_time[0];
-	statusbuf[8]=mystatus->work_time[1];
-	statusbuf[9]='*';
-	RS485_Send_Data(statusbuf,10);//发送10个字节
+	statusbuf[7]=dianliuzhi_A;
+	statusbuf[8]=(dianliuzhi_C+dianliuzhi_A)/2;
+	statusbuf[9]=dianliuzhi_C;
+	statusbuf[10]=mystatus->work_time[0];
+	statusbuf[11]=mystatus->work_time[1];
+	statusbuf[12]='*';
+	RS485_Send_Data(statusbuf,13);//发送10个字节
 	OS_EXIT_CRITICAL();	
 }
  void status_trans_rs485_scantask(status_box *mystatus)//从机程序
@@ -600,9 +607,13 @@ mystatus.work_time[1]=work_time_2;
 	statusbuf[4]=mystatus->size[1];
 	statusbuf[5]=mystatus->work_status[0];
 	statusbuf[6]=mystatus->work_status[1];
-
-	statusbuf[7]='*';
-	RS485_Send_Data(statusbuf,8);//发送10个字节
+	statusbuf[7]=dianliuzhi_A;
+	statusbuf[8]=(dianliuzhi_C+dianliuzhi_A)/2;
+	statusbuf[9]=dianliuzhi_C;
+	statusbuf[10]=mystatus->work_time[0];
+	statusbuf[11]=mystatus->work_time[1];
+	statusbuf[12]='*';
+	RS485_Send_Data(statusbuf,13);//发送10个字节
 	OS_EXIT_CRITICAL();	
 }
 
