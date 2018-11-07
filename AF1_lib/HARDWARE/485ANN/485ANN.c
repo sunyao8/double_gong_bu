@@ -13,9 +13,8 @@
 /***********************************************************************/
 #define CPT_LL                                                    '^'
 #define CONTROL                                                '/'
-
-//u16 RS485_RX_BUF[64]; 		//接收缓冲,最大64个字节
-//接收到的数据长度
+#define TIME_LIVE                        2*365*24*3
+ //接收到的数据长度
 vu32 RS485_RX_CNT=0;  
 //模式控制
  vu16  dog_clock=20;
@@ -29,7 +28,7 @@ OS_EVENT *master_led_task;
 //OS_EVENT * sub_machine2_open;		//下位机命令信号
 //OS_EVENT * sub_machine2_close;		//下位机命令信号
 
-OS_EVENT *scan_slave;
+OS_EVENT *scan_slave; 
 
 vu8 cont=0;//用于更改主机号的记次数器
 u32 life_time_1=0;//从机1工作时间的中间变量
@@ -87,6 +86,7 @@ double angle[4];
 
 
 /************************************************************/
+vu8 vernum=1;
 u16 wugong_95,wugong_computer;
 extern vu32 dianliuzhi_A,dianliuzhi_C;
 extern vu8 id_num;
@@ -100,7 +100,7 @@ s8 L_C_flag=1;//感性容性标准变量
 extern status_box mystatus;
 extern u8 ligt_time;
 vu8 rework_time[2];
-extern u8 hguestnum;
+extern u8 hguestnum, TO;
 extern u8 TR[19];
 extern u8 BT_num;
  void TIM4_Int_Init(u16 arr,u16 psc)
@@ -237,7 +237,9 @@ if(mystatus.work_status[1]==0)mystatus.work_time[1]=0;
 }
  
  void TIM3_IRQHandler(void)   //TIM4中断
-{	 static u8 count_rework[2];
+{	 static u16 count_rework[2];
+ u16 time_work=0;
+      static u16 c_rework=0;
 	OSIntEnter();   
 	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM4更新中断发生与否
 		{	  
@@ -246,7 +248,7 @@ if(mystatus.work_status[1]==0)mystatus.work_time[1]=0;
  if(rework_time[0]==1)
  	{
  	count_rework[0]++;
-	if(count_rework[0]==120)
+	if(count_rework[0]==1200)//放电 20分钟
 		{
 count_rework[0]=0;
 rework_time[0]=0;
@@ -265,7 +267,36 @@ rework_time[1]=0;
 
 	  }
 	}
+if((AT24CXX_ReadLenByte_sy(0xe000,2))>0&&(AT24CXX_ReadLenByte_sy(0xe000,2))!=0xffff)
 
+{
+	c_rework++;
+if(c_rework==72*20)//72 次为一分钟
+ //if(c_rework==1)//7次为6秒测试
+		{
+
+	c_rework=0;
+		
+			{
+					 time_work= AT24CXX_ReadLenByte_sy(0xe000,2);
+                  if(time_work>0)
+                 {
+          
+               time_work--;
+	       AT24CXX_WriteLenByte_sy(0xe000, time_work,2);
+
+			
+				 }
+		}
+
+
+
+
+	}
+
+		}
+
+if((AT24CXX_ReadLenByte_sy(0xe000,2))==0)TO=1;
 	}
    	OSIntExit();  
 }
@@ -361,7 +392,29 @@ rework_time[1]=0;
 /*****************************如果有分补机器，共补如果是主机，就要进行切换主机end******************************************/
 
 		}	
-/***********************************************************/		
+/***********************************************************/
+
+ 
+if(RS485_RX_BUF[RS485_RX_CNT-1]=='Z'){RS485_RX_BUF[0]='Z'; RS485_RX_CNT=1;}
+		if(RS485_RX_BUF[RS485_RX_CNT-1]=='X')
+			{	
+			
+		if(RS485_RX_BUF[RS485_RX_CNT-4]=='V'&&RS485_RX_BUF[RS485_RX_CNT-3]=='R')
+		{       
+		        if(RS485_RX_BUF[RS485_RX_CNT-2]>vernum||RS485_RX_BUF[RS485_RX_CNT-2]==100)
+		        	{
+		        	vernum=RS485_RX_BUF[RS485_RX_CNT-2];
+		        	verson_updata();
+				dog_clock=40;	
+				OSTaskSuspend(MASTER_TASK_PRIO );//挂起主机任状态.
+                         OSTaskResume(Receive_TASK_PRIO );//启动从机任务状态
+                          
+				}
+						
+		}
+RS485_RX_CNT=0;	
+		}
+ 		
 		if(RS485_RX_CNT>=512)RS485_RX_CNT=0;
 		 }  	
 	#ifdef OS_TICKS_PER_SEC	 	//如果时钟节拍数定义了,说明要使用ucosII了.
@@ -2302,4 +2355,53 @@ return 0;
 
 }
 
+
+void verson_updata()//此功能挂在屏幕显示任务中
+{
+u8 ver;
+u16 time_alive=TIME_LIVE;//年* 天*小时* 分钟1*356*24*60
+while(AT24CXX_Check());
+if(AT24CXX_Check()==0)
+{
+if(vernum<=23)
+{
+ver=AT24CXX_ReadOneByte(0x9000);
+
+if(ver>23&&ver!=225)//可能flash为非法操作，时间归零
+{
+AT24CXX_WriteLenByte_sy(0xe000,0,2);
+
+}
+
+
+if(vernum==0)  //永生版本
+{
+TO=0;
+AT24CXX_WriteLenByte_sy(0xe000, time_alive,2);
+while(1)
+{
+AT24CXX_WriteOneByte(0x9000,0);//写入版本号
+if(0==AT24CXX_ReadOneByte(0x9000))break;//保证写进去了
+}
+}
+
+
+if((vernum>ver||ver==255)) //更新版本 或 新机器
+{
+TO=0;
+AT24CXX_WriteLenByte_sy(0xe000, time_alive,2);
+while(1)
+{
+AT24CXX_WriteOneByte(0x9000,vernum);//写入版本号
+if(vernum==AT24CXX_ReadOneByte(0x9000))break;//保证写进去了
+}
+}
+
+
+}
+
+}
+
+
+}
 

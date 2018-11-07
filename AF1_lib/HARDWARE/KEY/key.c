@@ -11,10 +11,10 @@ u8 zhongduan_flag_BT=1;
 u8 zhongduan_flag_warn_volt=1;
 vu8 id_num=1,BT_num=1;
 vu8	warn_volt_onlimt=25;//过压值 +400
-vu8 grafnum=1,tempshuzhi,vernum=108,hguestnum=222,gonglvshishu=0,tempshuzhi2;
+vu8 grafnum=1,tempshuzhi,hguestnum=222,gonglvshishu=0,tempshuzhi2;
 vu16 dianya_zhi=0,wugongkvar=0;
 vu32	dianliuzhi=0,dianliuzhi_A=0,dianliuzhi_C=0;
-
+extern vu8 vernum;
  vu8 ligt_time=16;
  u8 TR[]={1,2,3,4,5,6,8,10,12,16,20,24,30,40,50,60,80,100,120};
 
@@ -161,7 +161,7 @@ void key_idset(void)
 					
 									case 8:	//显示VER 
 										Clera_lcd();
-										Graf_ver(vernum);
+										Graf_ver(AT24CXX_ReadOneByte(0x9000));
 										break;
 					
 								}
@@ -292,7 +292,7 @@ void key_idset(void)
 					
 									case 8:	//显示VER 
 										Clera_lcd();
-										Graf_ver(vernum);
+										Graf_ver(AT24CXX_ReadOneByte(0x9000));
 										break;
 					
 								}	

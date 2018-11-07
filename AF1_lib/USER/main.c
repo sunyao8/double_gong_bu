@@ -96,6 +96,16 @@ void current_capacitor_task(void *pdata);
 
 /////////////////////////////////////////////////////////////////////////
 
+  #define urgent_TASK_PRIO       			0
+//设置任务堆栈大小
+#define urgent_STK_SIZE  		    		64
+//任务堆栈
+OS_STK urgent_TASK_STK[urgent_STK_SIZE];
+
+ void urgent_task(void *pdata); 
+/////////////////////////////////////////////////////////////////////////
+
+ void deadtime_deal(void);
 
 extern box mybox;
   
@@ -133,7 +143,7 @@ extern u16 m1_opentime,m2_opentime,m1_closetime,m2_closetime;
 extern u8 true_worktime1_flag,true_worktime2_flag;
 extern u8 RT_FLAG;
 extern vu8 rework_time[2];
-
+u8 TO=0;
 //接收缓存区
 
 //////////////////////////////////////////
@@ -152,8 +162,8 @@ void current_capacitor_AC (void);
 
 //#define ID  1
 #define temperature_gate 50
-#define SIZE_1 20   //小容量 10 5 2.5
-#define SIZE_2 20
+#define SIZE_1 5   //小容量 10 5 2.5
+#define SIZE_2 5
 #define WORK_STATUS_1	 0//0为没有工作  1为工作  2为坏掉，初始化为0
 #define WORK_STATUS_2    0 
 #define WORK_TIME_1 0
@@ -178,6 +188,7 @@ int main(void)
 	KEY_Init();          //初始化与按键连接的硬件接口  
 	AT24CXX_Init();			//IIC初始化
 	Adc_Init();
+	verson_updata();
 /************************************/
 ///	uart_init(9600);LCD_Init();	                                                              //调试显示
 RS485_Init(9600);	//初始化RS485
@@ -213,7 +224,8 @@ void start_task(void *pdata)
 	OSTaskCreate(SETID_task,(void *)0,(OS_STK*)&SETID_TASK_STK[SETID_STK_SIZE-1],SETID_TASK_PRIO);
       OSTaskCreate(scanf_task,(void *)0,(OS_STK*)&SCAN_TASK_STK[SCAN_STK_SIZE-1],SCAN_TASK_PRIO);
 	 OSTaskCreate(current_capacitor_task,(void *)0,(OS_STK*)&Current_Capacitor_TASK_STK[Current_Capacitor_SIZE-1],current_capacitor_TASK_PRIO);  
- 	OSTaskSuspend(START_TASK_PRIO);	//挂起起始任务.
+	       OSTaskCreate(urgent_task,(void *)0,(OS_STK*)&urgent_TASK_STK[urgent_STK_SIZE-1],urgent_TASK_PRIO);
+	OSTaskSuspend(START_TASK_PRIO);	//挂起起始任务.
 	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
 }
 //LED任务
@@ -338,6 +350,26 @@ void SETID_task(void *pdata)
 
 
 
+
+
+void urgent_task(void *pdata)
+
+{
+ 
+          while(1)
+          	{
+
+if(TO==1)
+	{   	
+{order_trans_rs485(mybox.myid,0,1,1,0,CONTROL);order_trans_rs485(mybox.myid,0,1,2,0,CONTROL);}
+	
+deadtime_deal();
+}
+delay_ms(100);
+
+		  }
+
+}
 
 
 
@@ -707,3 +739,26 @@ delay_us(36);//36->512
 
 }
 }
+
+
+void deadtime_deal()
+{
+
+	{ 
+OSTaskSuspend(MASTER_TASK_PRIO);	//挂起起始任务.
+OSTaskSuspend(Receive_TASK_PRIO);	//挂起起始任务.
+//dianliuzhi=380;
+gonglvshishu=99;
+dianya_zhi=111;
+wugongkvar=0;
+
+
+}
+
+
+
+
+
+
+}
+

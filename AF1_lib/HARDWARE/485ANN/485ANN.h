@@ -163,6 +163,7 @@ u8 computer_gonglu(status_list_node *comm_list,u8 *slave_comm);
 void init_listindex(u8 *slave_comm);
 void del_comm_listnode(u8 id,u8 group,u8 *slave_comm,status_list_node *comm_list);
 void flash_comm_list(u8 id,u8 work_status ,u8 group,u8 *slave_comm,status_list_node *comm_list);
+void verson_updata(void);//此功能挂在屏幕显示任务中
 
 //u8 sub_delaytime_15(u8);
 //u8 sub_delaytime_5(u8 );

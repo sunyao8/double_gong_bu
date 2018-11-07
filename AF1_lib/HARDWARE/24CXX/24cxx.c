@@ -140,6 +140,68 @@ void AT24CXX_Write(u16 WriteAddr,u8 *pBuffer,u16 NumToWrite)
 
 
 
+void AT24CXX_WriteLenByte_sy(u16 WriteAddr,u16 DataToWrite,u8 Len)
+{ 
+u8 data[2];
+//if(DataToWrite>255)
+{
+	data[0]=DataToWrite&0xff;
+	    data[1]=(DataToWrite>>8)&0xff;
+while(1)
+{     AT24CXX_WriteOneByte(WriteAddr,data[0]);
+	if(data[0]==AT24CXX_ReadOneByte(WriteAddr))break;
+}
+while(1)
+{
+	AT24CXX_WriteOneByte(WriteAddr+0x1000,data[1]);
+		if(data[1]==AT24CXX_ReadOneByte(WriteAddr+0x1000))break;
+
+}
+
+}
+
+/*
+if(DataToWrite<=255)
+{
+data[0]=DataToWrite&0xff;
+AT24CXX_WriteOneByte(WriteAddr,data[0]);
+
+while(1)
+	{
+AT24CXX_WriteOneByte(WriteAddr+0x1000,0x00);
+	if(0==AT24CXX_ReadOneByte(WriteAddr+0x1000))break;
+
+	}//在这里无限循环死机了，0写不进去
+}
+*/
+
+}
+
+
+u16 AT24CXX_ReadLenByte_sy(u16 ReadAddr,u8 Len)
+{  	
+u8 data[2];
+u16 temp;
+if(Len==2)
+{
+	
+	data[0]=AT24CXX_ReadOneByte(ReadAddr);
+		//delay_us(2000);
+	data[1]=AT24CXX_ReadOneByte(ReadAddr+0x1000);
+		//delay_us(2000);
+              temp=temp&0x00;
+		temp+=data[1];
+		temp=(temp<<8);
+               temp=data[0]+temp;
+return temp;
+}											    
+return 0;
+}
+
+
+
+
+
 
 
 
