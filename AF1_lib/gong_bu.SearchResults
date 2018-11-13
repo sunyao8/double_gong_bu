@@ -1,8 +1,11 @@
----- 0xe000 Matches (8 in 1 files) ----
-485ANN.c (hardware\485ann):if((AT24CXX_ReadLenByte_sy(0xe000,2))>0&&(AT24CXX_ReadLenByte_sy(0xe000,2))!=0xffff)
-485ANN.c (hardware\485ann):					 time_work= AT24CXX_ReadLenByte_sy(0xe000,2);
-485ANN.c (hardware\485ann):	       AT24CXX_WriteLenByte_sy(0xe000, time_work,2);
-485ANN.c (hardware\485ann):if((AT24CXX_ReadLenByte_sy(0xe000,2))==0)OSSemPost(urgent_sem);
-485ANN.c (hardware\485ann):AT24CXX_WriteLenByte_sy(0xe000,0,2);
-485ANN.c (hardware\485ann):AT24CXX_WriteLenByte_sy(0xe000, time_alive,2);
-485ANN.c (hardware\485ann):AT24CXX_WriteLenByte_sy(0xe000, time_alive,2);
+---- dianliuzhi_A Matches (10 in 3 files) ----
+485ANN.c (hardware\485ann):extern u8 dianliuzhi_A,dianliuzhi_C;
+485ANN.c (hardware\485ann):	statusbuf[7]=dianliuzhi_A;
+485ANN.c (hardware\485ann):	statusbuf[8]=(dianliuzhi_C+dianliuzhi_A)/2;
+485ANN.c (hardware\485ann):	statusbuf[7]=dianliuzhi_A;
+485ANN.c (hardware\485ann):	statusbuf[8]=(dianliuzhi_C+dianliuzhi_A)/2;
+Key.c (hardware\key):u8	dianliuzhi_A=0,dianliuzhi_C=0;
+Key.c (hardware\key):										Graf_C_cuirrent(dianliuzhi_A,A);
+Key.c (hardware\key):										Graf_C_cuirrent(dianliuzhi_A,A);
+Main.c (user):extern u8 dianliuzhi_A,dianliuzhi_C;
+Main.c (user): 	dianliuzhi_A= (CA_max)*0.031-50;

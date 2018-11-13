@@ -88,7 +88,7 @@ double angle[4];
 /************************************************************/
 vu8 vernum=1;
 u16 wugong_95,wugong_computer;
-extern vu32 dianliuzhi_A,dianliuzhi_C;
+extern u8 dianliuzhi_A,dianliuzhi_C;
 extern vu8 id_num;
 extern vu8 warn_volt_onlimt;
 extern vu8 grafnum,tempshuzhi,gonglvshishu,tempshuzhi2;
@@ -100,9 +100,11 @@ s8 L_C_flag=1;//感性容性标准变量
 extern status_box mystatus;
 extern u8 ligt_time;
 vu8 rework_time[2];
-extern u8 hguestnum, TO;
+extern u8 hguestnum, TO,up_verson;
 extern u8 TR[19];
 extern u8 BT_num;
+extern vu32 live_alltime,live_alltime_count;
+
  void TIM4_Int_Init(u16 arr,u16 psc)
 {
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -248,7 +250,7 @@ if(mystatus.work_status[1]==0)mystatus.work_time[1]=0;
  if(rework_time[0]==1)
  	{
  	count_rework[0]++;
-	if(count_rework[0]==1200)//放电 20分钟
+	if(count_rework[0]==12)//放电 120 为2分钟
 		{
 count_rework[0]=0;
 rework_time[0]=0;
@@ -259,7 +261,7 @@ rework_time[0]=0;
   if(rework_time[1]==1)
  	{
  	count_rework[1]++;
-	if(count_rework[1]==120)
+	if(count_rework[1]==12)
 		{
 count_rework[1]=0;
 rework_time[1]=0;
@@ -267,7 +269,7 @@ rework_time[1]=0;
 
 	  }
 	}
-if((AT24CXX_ReadLenByte_sy(0xe000,2))>0&&(AT24CXX_ReadLenByte_sy(0xe000,2))!=0xffff)
+if(live_alltime>0&&(live_alltime!=0xffff))
 
 {
 	c_rework++;
@@ -277,17 +279,7 @@ if(c_rework==72*20)//72 次为一分钟
 
 	c_rework=0;
 		
-			{
-					 time_work= AT24CXX_ReadLenByte_sy(0xe000,2);
-                  if(time_work>0)
-                 {
-          
-               time_work--;
-	       AT24CXX_WriteLenByte_sy(0xe000, time_work,2);
-
-			
-				 }
-		}
+			live_alltime--;
 
 
 
@@ -296,7 +288,7 @@ if(c_rework==72*20)//72 次为一分钟
 
 		}
 
-if((AT24CXX_ReadLenByte_sy(0xe000,2))==0)TO=1;
+if(live_alltime==0&&TO==0)TO=1;
 	}
    	OSIntExit();  
 }
@@ -310,73 +302,9 @@ if((AT24CXX_ReadLenByte_sy(0xe000,2))==0)TO=1;
  		
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) //接收到数据
 	{	 
-	 			 
-		 RS485_RX_BUF[RS485_RX_CNT++]=USART_ReceiveData(USART2); 	//读取接收到的数据
-
-/***************************************************************/			
-		if(RS485_RX_BUF[RS485_RX_CNT-1]=='&'){RS485_RX_BUF[0]='&'; RS485_RX_CNT=1;}
-		if(RS485_RX_BUF[RS485_RX_CNT-1]=='*')
-		{				
-		           RS485_RX_CNT=0;
-			if(RS485_RX_BUF[1]=='!'){OSMboxPost(RS485_RT,(void*)&RS485_RX_BUF);}
-
-		if(RS485_RX_BUF[1]=='#')
-			{
-/*
-				if(mybox.master==1)//如果是主机，检查从机中有无id号比主机小的，如果有交换主从机
-					{
-
-				if(mybox.myid>RS485_RX_BUF[2])
-						{
-					mybox.master=0;
-					     hguestnum=222;
-					dog_clock=20;	 
-					OSTaskResume(Receive_TASK_PRIO );//启动从机任务状态	 
-                      		OSTaskSuspend(MASTER_TASK_PRIO );//挂起主机任状态.
-					}
-				}			
-
-				else
-					*/
-					OSMboxPost(RS485_STUTAS_MBOX,(void*)&RS485_RX_BUF);
-
-		     }
-               else 
-			   	{
-			   	/*
-			   	if(mybox.master==1)//如果是主机，检查其他有无主机中id号比本主机小的，如果有交换主从机
-					{
-
-				if(mybox.myid>RS485_RX_BUF[1])
-						{
-					mybox.master=0;
-					     hguestnum=222;
-					dog_clock=20;	 
-					OSTaskResume(Receive_TASK_PRIO );//启动从机任务状态	 
-                      		OSTaskSuspend(MASTER_TASK_PRIO );//挂起主机任状态.
-					}
-				}
-				else 
-					*/
-					OSMboxPost(RS485_MBOX,(void*)&RS485_RX_BUF);
-
-			       }
-
-		} 
-/************************分补收集状态协议，共补系统 收到后舍弃 并清空RS485_RX_CNT ***********************************/		
-			if(RS485_RX_BUF[RS485_RX_CNT-1]=='%'){RS485_RX_BUF[0]='%'; RS485_RX_CNT=1;}
-		if(RS485_RX_BUF[RS485_RX_CNT-1]==')')
-	{
-				RS485_RX_CNT=0;
-
-		}
-/*************************分补系统显示数据协议，共补系统 收到后舍弃 并清空RS485_RX_CNT **********************************/		
-		
-		if(RS485_RX_BUF[RS485_RX_CNT-1]=='$'){RS485_RX_BUF[0]='$'; RS485_RX_CNT=1;}
-		if(RS485_RX_BUF[RS485_RX_CNT-1]=='?')
+	if(mybox.master==1)
 		{
-				RS485_RX_CNT=0;				
-		}
+		 RS485_RX_BUF[RS485_RX_CNT++]=USART_ReceiveData(USART2); 	//读取接收到的数据
 			if(RS485_RX_BUF[RS485_RX_CNT-1]=='-'){RS485_RX_BUF[0]='-'; RS485_RX_CNT=1;}
 		if(RS485_RX_BUF[RS485_RX_CNT-1]=='=')
 		{			RS485_RX_CNT=0;
@@ -389,31 +317,62 @@ if((AT24CXX_ReadLenByte_sy(0xe000,2))==0)TO=1;
 					OSTaskResume(Receive_TASK_PRIO );//启动从机任务状态	 
                       		OSTaskSuspend(MASTER_TASK_PRIO );//挂起主机任状态.
 				}
-/*****************************如果有分补机器，共补如果是主机，就要进行切换主机end******************************************/
 
 		}	
-/***********************************************************/
 
- 
+/*****************************如果有分补机器，共补如果是主机，就要进行切换主机end******************************************/
+
+ 	if(RS485_RX_BUF[RS485_RX_CNT-1]=='&'){RS485_RX_BUF[0]='&'; RS485_RX_CNT=1;} 
+		if(RS485_RX_BUF[RS485_RX_CNT-1]=='*')
+		{				
+		           
+		if(RS485_RX_BUF[RS485_RX_CNT-12]=='#')OSMboxPost(RS485_STUTAS_MBOX,(void*)&RS485_RX_BUF);
+                       RS485_RX_CNT=0;
+		}
+
+          else if(RS485_RX_CNT>13)RS485_RX_CNT=0;
+
+	}
+
+
+
+	if(mybox.master==0)	
+		{
+				 RS485_RX_BUF[RS485_RX_CNT++]=USART_ReceiveData(USART2); 	//读取接收到的数据
+
+///////////////////////////////////////////版本更新//////////////////////////////////////////////
 if(RS485_RX_BUF[RS485_RX_CNT-1]=='Z'){RS485_RX_BUF[0]='Z'; RS485_RX_CNT=1;}
 		if(RS485_RX_BUF[RS485_RX_CNT-1]=='X')
 			{	
 			
 		if(RS485_RX_BUF[RS485_RX_CNT-4]=='V'&&RS485_RX_BUF[RS485_RX_CNT-3]=='R')
 		{       
-		        if(RS485_RX_BUF[RS485_RX_CNT-2]>vernum||RS485_RX_BUF[RS485_RX_CNT-2]==100)
+		        if(RS485_RX_BUF[RS485_RX_CNT-2]>vernum||RS485_RX_BUF[RS485_RX_CNT-2]==0)
 		        	{
 		        	vernum=RS485_RX_BUF[RS485_RX_CNT-2];
-		        	verson_updata();
-				dog_clock=40;	
-				OSTaskSuspend(MASTER_TASK_PRIO );//挂起主机任状态.
-                         OSTaskResume(Receive_TASK_PRIO );//启动从机任务状态
-                          
+		            up_verson=1;
+                          RS485_RX_CNT=0;
 				}
 						
 		}
 RS485_RX_CNT=0;	
 		}
+		
+///////////////////////////////////////////版本更新end//////////////////////////////////////////////
+
+	if(RS485_RX_BUF[RS485_RX_CNT-1]=='&'){RS485_RX_BUF[0]='&'; RS485_RX_CNT=1;}
+		if(RS485_RX_BUF[RS485_RX_CNT-1]=='*')
+		{				
+		           RS485_RX_CNT=0;
+			OSMboxPost(RS485_MBOX,(void*)&RS485_RX_BUF);
+	
+		} 
+else if(RS485_RX_CNT>11)RS485_RX_CNT=0;
+	}
+
+/***************************************************************/			
+	
+
  		
 		if(RS485_RX_CNT>=512)RS485_RX_CNT=0;
 		 }  	
@@ -1845,157 +1804,7 @@ static u8 warning_flag=0;
 u16 min;
 
 {
-if(RT_FLAG==5)	
-{
-        u8 err;
-		gonglvyinshu();//计算功率，电压电流与显示按键分开
-if(L_C_flag==1)gl[0]=wugongkvar;
-else gl[0]=-wugongkvar;
 
-{
-      	{
-for(i=slave_comm[8];i<=slave_comm[9]-1;i++)
-if(comm_list[i].work_status==0)
-
-{
-
-order_trans_rs485(mybox.myid,comm_list[i].myid,1,comm_list[i].group,1,CONTROL);
-// OSMboxPend(RS485_RT,OS_TICKS_PER_SEC/10,&err);
-    // if(err==OS_ERR_TIMEOUT);
-//else 
-		{
-RT_FLAG=3;
-var=var+(200*dianya_zhi*dianya_zhi)/450/450;
-		}
-}
-
-
-
-
-/**********************************/
-      	}
-
-
-{
-for(i=slave_comm[6];i<=slave_comm[7]-1;i++)
-if(comm_list[i].work_status==0)
-	{
-
-order_trans_rs485(mybox.myid,comm_list[i].myid,1,comm_list[i].group,1,CONTROL);
-//OSMboxPend(RS485_RT,OS_TICKS_PER_SEC/10,&err);
-  //if(err==OS_ERR_TIMEOUT);
-//else 
-		{
-RT_FLAG=3;
-var=var+(100*dianya_zhi*dianya_zhi)/450/450;
-		}
-}
-
-/*********************************/
-	  }
-
-
-{
-for(i=slave_comm[4];i<=slave_comm[5]-1;i++)
-if(comm_list[i].work_status==0)
-	{
-
-order_trans_rs485(mybox.myid,comm_list[i].myid,1,comm_list[i].group,1,CONTROL);
-  OSMboxPend(RS485_RT,OS_TICKS_PER_SEC/10,&err);
-   //  if(err==OS_ERR_TIMEOUT);
-//	else 
-		{
-RT_FLAG=3;
-var=var+(50*dianya_zhi*dianya_zhi)/450/450;
-		}
-}
-
-
-
-/*********************************/
-
-      	}
-
-
-
-
-      
-}
-/**************************************投主机**/
-{
-if(mystatus.work_status[0]==0)
-{
-GPIO_ResetBits(GPIOA,GPIO_Pin_0);
- set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],1,mystatus.work_status[1],mystatus.work_time[0],mystatus.work_time[1]);
-      LIGHT(mystatus.work_status[0],mystatus.work_status[1],0);
-	  RT_FLAG=3;
-var=var+(10*mystatus.work_status[0]*dianya_zhi*dianya_zhi)/450/450;
-
- }
-
-if(mystatus.work_status[1]==0)
-{GPIO_ResetBits(GPIOA,GPIO_Pin_8);
- set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],1,mystatus.work_time[0],mystatus.work_time[1]);
-      LIGHT(mystatus.work_status[0],mystatus.work_status[1],0);
-	  	  RT_FLAG=3;
-var=var+(10*mystatus.work_status[1]*dianya_zhi*dianya_zhi)/450/450;
-
- }
-}
-/**************************************投主机end**/
-
-}
-
-if(RT_FLAG==3)	
-{
-delay_us(2500000);//36->512
-gonglvyinshu();//计算功率，电压电流与显示按键分开
-if(L_C_flag==1)gl[1]=wugongkvar;
-else gl[1]=-wugongkvar;
-min=abs(abs(gl[0]-gl[1])*TR[0]-var);
-
-for(i=0;i<19;i++)
-{
-if(abs(abs(gl[0]-gl[1])*TR[i]-var)<=min){min=abs(abs(gl[0]-gl[1])*TR[i]-var);K_BT=TR[i];BT_num=i;}
-
-}
-/*自动判别变比进行系统记忆，存入EPROM里*/
-
-AT24CXX_WriteOneByte(0x0100,BT_num);					
-
-RT_FLAG=4;//2//2不能用芯片bug
-/**************************************切主机**/
-{
- 	{
- 	GPIO_SetBits(GPIOA,GPIO_Pin_0);
- set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],0,mystatus.work_status[1],0,mystatus.work_time[1]);
-      LIGHT(mystatus.work_status[0],mystatus.work_status[1],1);
-
- }
-delay_us(100000);
-
-{GPIO_SetBits(GPIOA,GPIO_Pin_8);
- set_now_mystatus(mystatus.myid,mystatus.size[0],mystatus.size[1],mystatus.work_status[0],0,mystatus.work_time[0],0);
-      LIGHT(mystatus.work_status[0],mystatus.work_status[1],1);
-
- }
-delay_us(100000);
-
-}
-/**************************************切主机**/
-
-order_trans_rs485(mybox.myid,0,1,1,0,CONTROL);
-delay_us(1000000);
-order_trans_rs485(mybox.myid,0,1,2,0,CONTROL);
-delay_us(1000000);
-return 0;
-
-
-}
-//tempshuzhi=K_BT;
-//K_BT=BT;//写死变比处，用于非自动判断变比，如果采用自动获取变比需要注掉该句话
-
-K_BT=TR[BT_num];
 
 if(RT_FLAG==4)
 {
@@ -2376,8 +2185,11 @@ AT24CXX_WriteLenByte_sy(0xe000,0,2);
 
 if(vernum==0)  //永生版本
 {
-TO=0;
+
 AT24CXX_WriteLenByte_sy(0xe000, time_alive,2);
+live_alltime=AT24CXX_ReadLenByte_sy(0xe000,2);
+live_alltime_count=AT24CXX_ReadLenByte_sy(0xe000,2);
+TO=0;
 while(1)
 {
 AT24CXX_WriteOneByte(0x9000,0);//写入版本号
@@ -2388,8 +2200,11 @@ if(0==AT24CXX_ReadOneByte(0x9000))break;//保证写进去了
 
 if((vernum>ver||ver==255)) //更新版本 或 新机器
 {
-TO=0;
+
 AT24CXX_WriteLenByte_sy(0xe000, time_alive,2);
+live_alltime=AT24CXX_ReadLenByte_sy(0xe000,2);
+live_alltime_count=AT24CXX_ReadLenByte_sy(0xe000,2);
+TO=0;
 while(1)
 {
 AT24CXX_WriteOneByte(0x9000,vernum);//写入版本号
@@ -2401,7 +2216,7 @@ if(vernum==AT24CXX_ReadOneByte(0x9000))break;//保证写进去了
 }
 
 }
-
-
+live_alltime=AT24CXX_ReadLenByte_sy(0xe000,2);
+live_alltime_count=AT24CXX_ReadLenByte_sy(0xe000,2);
 }
 

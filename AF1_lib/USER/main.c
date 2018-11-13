@@ -143,7 +143,7 @@ extern u16 m1_opentime,m2_opentime,m1_closetime,m2_closetime;
 extern u8 true_worktime1_flag,true_worktime2_flag;
 extern u8 RT_FLAG;
 extern vu8 rework_time[2];
-u8 TO=0;
+u8 TO=0,up_verson=0;
 //接收缓存区
 
 //////////////////////////////////////////
@@ -154,6 +154,7 @@ u8 init=20;
 vu8 auto_on=1;
 vu8 temperature_warn=0;
 vu32 init_time=80;
+vu32 live_alltime,live_alltime_count;
 int slave_control(u8,u8);
 void warn(void);
 
@@ -173,7 +174,7 @@ extern u8 ligt_time;
 extern vu8 BT_num;
 extern vu8 warn_volt_onlimt;
 extern vu8 id_num;
-extern vu32 dianliuzhi_A,dianliuzhi_C;
+extern u8 dianliuzhi_A,dianliuzhi_C;
 int main(void)
  {	 
   
@@ -306,7 +307,11 @@ while(1)
 {
  warn();
  key_idset();//按键与显示功能
-//if(mybox.master==0) current_capacitor_AC ();
+if(live_alltime<live_alltime_count)
+	{
+AT24CXX_WriteLenByte_sy(0xe000, live_alltime,2);
+live_alltime_count=AT24CXX_ReadLenByte_sy(0xe000,2);
+}
 delay_ms(100);
 }
 }
@@ -365,6 +370,17 @@ if(TO==1)
 	
 deadtime_deal();
 }
+
+if(up_verson==1)
+{
+up_verson=0;
+	verson_updata();
+				dog_clock=40;	
+				OSTaskSuspend(MASTER_TASK_PRIO );//挂起主机任状态.
+                         OSTaskResume(Receive_TASK_PRIO );//启动从机任务状态
+
+}
+
 delay_ms(100);
 
 		  }
@@ -721,9 +737,9 @@ u16 CA=0,CC=0;
  for(i=0;i<512;i++)
 	 	{
 	 	CA=(Get_Adc_Average(ADC_Channel_7,1));
-if(CA_max<(u32)CA)CA_max=(u32)CA;///  1550
+if(CA_max<CA)CA_max=CA;///  1550
 	 	CC=(Get_Adc_Average(ADC_Channel_8,1));
-if(CC_max<(u32)CC)CC_max=(u32)CC;///  1550
+if(CC_max<CC)CC_max=CC;///  1550
 
 
 delay_us(36);//36->512
@@ -732,8 +748,8 @@ delay_us(36);//36->512
 
 	 	
   
- 	dianliuzhi_A= (CA_max)*0.031-50;
-	dianliuzhi_C= (CC_max)*0.031-50;
+ 	dianliuzhi_A= (u8)((CA_max)*0.031-50);
+	dianliuzhi_C= (u8)((CC_max)*0.031-50);
 
 
 
